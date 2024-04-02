@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Reserva</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        /* Adicionando estilo para centralizar a tela */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script>
+        // Fetch para obter o conteúdo de navbar.html
+        fetch('/navbar')
+            .then(response => response.text())
+            .then(data => {
+                // Inserindo o conteúdo na div navbar-container
+                document.getElementById('navbar-container').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Erro ao carregar o navbar:', error);
+            });
+    </script>
+
+    <div class="container">
+        <!-- Incluindo a barra de navegação -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Incluindo navbar.html -->
+                <div class="navbar-container" id="navbar-container">
+                    <!-- Aqui o conteúdo de navbar.html será incluído dinamicamente -->
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+        <br>
+        <br>
+        <h1>Bem-vindo!</h1>
+    </div>
+
+    <script src="/script.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Quartos</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/styles.css">
+
+    <!-- Inclua o jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Inclua o plugin de máscara jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+</head>
+
+<body>
+
+    <script>
+        // Fetch para obter o conteúdo de navbar.html
+        fetch('/navbar')
+            .then(response => response.text())
+            .then(data => {
+                // Inserindo o conteúdo na div navbar-container
+                document.getElementById('navbar-container').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Erro ao carregar o navbar:', error);
+            });
+    </script>
+
+    <div class="container">
+        <!-- Incluindo a barra de navegação -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Incluindo navbar.html -->
+                <div class="navbar-container" id="navbar-container">
+                    <!-- Aqui o conteúdo de navbar.html será incluído dinamicamente -->
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h1 style="text-align-last: center;">Cadastro de Animais</h1>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="numero_reserva">Número de Reserva:</label>
+                        <input type="number" id="numero_reserva" name="numero_reserva" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="cpf">Nome do Baymax:</label>
+                        <input type="text" id="cpf" name="cpf" class="cpf-mask">
+                    </div>
+                </div>                
+                <div class="col-md-9">
+                    <div class="form-group"></div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <button onclick="pesquisarAnimal()" class="btn button btn-primary"
+                            style="padding: revert; margin: initial;">Pesquisar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label for="tipo_servico">Raça:</label>
+                    <select id="tipo_servico" name="tipo_servico" class="form-control">
+                        <option value="servico1">Raça 1</option>
+                        <option value="servico2">Raça 2</option>
+                        <option value="servico3">Raça 3</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Ocupado:</label>
+                        <div class="checkbox-select">
+                            <input type="checkbox" id="ocupado_sim" name="ocupado" value="sim">
+                            <label for="ocupado_sim"></label>
+                        </div>
+                        <label style="flex: 0 0 20%;">Sim</label>
+                        <div class="checkbox-select">
+                            <input type="checkbox" id="ocupado_nao" name="ocupado" value="nao">
+                            <label for="ocupado_nao"></label>
+                        </div>
+                        <label style="flex: 0 0 20%;">Não</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12" style="text-align: -webkit-center;">
+                <button onclick="cadastrarAnimal()" class="btn btn-primary">Cadastrar Animal</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <h2 style="text-align-last: center;">Tabela de Quartos</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome do Animal</th>
+                            <th>Raça</th>
+                            <th>Pedigre</th>
+                            <th>Reserva Realacionada</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Aqui você pode adicionar as linhas da tabela com os dados -->
+                        <!-- Por exemplo: -->
+                        <tr>
+                            <td><input type="text" value="" class="numeros-apenas"></td>
+                            <td><input type="text" value=""></td>
+                            <td><input type="text" value=""></td>
+                            <td><input type="text" value="" class="numeros-apenas"></td>
+                            <td><input type="text" value=""></td>
+                            <td>
+                                <button onclick="atualizarAnimal()" class="btn btn-primary">Atualizar</button>
+                                <button onclick="removerAnimal()" class="btn btn-danger">Remover</button>
+                            </td>
+                        </tr>
+                        <!-- Adicione mais linhas conforme necessário -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/script.js"></script>
+
+</body>
+
+</html>

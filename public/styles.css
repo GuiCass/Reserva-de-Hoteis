@@ -1,0 +1,90 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.form-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    flex: 0 0 30%;
+    /* Distribui 30% do espaço disponível */
+}
+
+.form-group input,
+.form-group select {
+    width: calc(70% - 10px);
+    /* Calcula 70% do espaço disponível */
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.form-group button {
+    width: calc(100% - 10px);
+    /* Calcula 30% do espaço disponível */
+    margin-left: 10px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.form-group button:hover {
+    background-color: #0056b3;
+}
+
+.btn-circle {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    line-height: 40px;
+    text-align: center;
+}
+
+.checkbox-select {
+    display: inline-block;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.checkbox-select input[type="checkbox"] {
+    display: none;
+}
+
+.checkbox-select label {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 18px;
+}
+
+.checkbox-select input[type="checkbox"]:checked+label::before {
+    content: "\2713";
+    /* Checkmark symbol */
+    color: #007bff;
+}

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Reserva</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            flex: 0 0 30%; /* Distribui 30% do espaço disponível */
+        }
+        .form-group input,
+        .form-group select {
+            width: calc(70% - 10px); /* Calcula 70% do espaço disponível */
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            width: calc(30% - 10px); /* Calcula 30% do espaço disponível */
+            margin-left: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="form-group">
+        <label for="numero_reserva">Número de Reserva:</label>
+        <input type="number" id="numero_reserva" name="numero_reserva">
+        <button onclick="pesquisarReserva()">Pesquisar</button>
+    </div>
+    <div class="form-group">
+        <label for="cpf">CPF:</label>
+        <input type="text" id="cpf" name="cpf">
+    </div>
+    <div class="form-group">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome">
+    </div>
+    <div class="form-group">
+        <label for="quarto">Quarto:</label>
+        <input type="text" id="quarto" name="quarto">
+    </div>
+    <div class="form-group">
+        <label for="tipo_servico">Tipo de Serviço:</label>
+        <select id="tipo_servico" name="tipo_servico">
+            <option value="servico1">Serviço 1</option>
+            <option value="servico2">Serviço 2</option>
+            <option value="servico3">Serviço 3</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="tipo_pagamento">Tipo de Pagamento:</label>
+        <select id="tipo_pagamento" name="tipo_pagamento">
+            <option value="pagamento1">Pagamento 1</option>
+            <option value="pagamento2">Pagamento 2</option>
+            <option value="pagamento3">Pagamento 3</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="checkin_out">Check-in / Check-out:</label>
+        <input type="text" id="checkin_out" name="checkin_out">
+    </div>
+    <button onclick="cadastrarReserva()">Cadastrar Reserva</button>
+</div>
+
+<script>
+    function cadastrarReserva() {
+        // Aqui você pode adicionar o código JavaScript para enviar os dados do formulário para o servidor
+        // Por exemplo, usando AJAX para enviar uma solicitação POST para um endpoint no backend
+        // Você também pode validar os campos do formulário antes de enviar os dados
+        alert("Reserva cadastrada com sucesso!");
+    }
+
+    function pesquisarReserva() {
+        // Aqui você pode adicionar o código JavaScript para pesquisar a reserva com base no número de reserva
+        // Por exemplo, usando AJAX para enviar uma solicitação GET para buscar os detalhes da reserva no backend
+        alert("Pesquisando reserva...");
+    }
+</script>
+
+</body>
+</html>
