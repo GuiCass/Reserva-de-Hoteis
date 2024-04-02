@@ -3,28 +3,33 @@ function pesquisarReserva() {
     console.log("batata")
     console.log(numeroReserva)
 
-    // Realiza a solicitação AJAX usando jQuery
-    $.ajax({
-        url: '/reserva/' + numeroReserva, // Define a URL da API onde você quer pesquisar a reserva
-        type: 'GET', // Tipo de solicitação HTTP
-        success: function(reserva) {
+    // Realiza a solicitação usando fetch
+    fetch('/reserva/' + numeroReserva)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao pesquisar reserva');
+            }
+            return response.json();
+        })
+        .then(reserva => {
             // Manipula a resposta recebida do servidor
 
             // Preenche os outros campos com os valores da reserva
-            $('#cpf').val(reserva.cpf);
-            //$('#nome').val(reserva.nome);
-            $('#quarto').val(reserva.quarto);
-            //$('#tipo_servico').val(reserva.id_service_plan);
-            //$('#tipo_pagamento').val(reserva.id_pag);
-            //$('#checkin_in').val(reserva.date_check_in);
-            //$('#checkin_out').val(reserva.date_check_out);
-        },
-        error: function(erro) {
+            console.log(reserva);
+            document.getElementById('cpf').value = reserva.cpf_resp;
+            //document.getElementById('nome').value = reserva.nome;
+            document.getElementById('quarto').value = reserva.num_quarto;
+            //document.getElementById('tipo_servico').value = reserva.id_service_plan;
+            //document.getElementById('tipo_pagamento').value = reserva.id_pag;
+            //document.getElementById('checkin_in').value = reserva.date_check_in;
+            //document.getElementById('checkin_out').value = reserva.date_check_out;
+        })
+        .catch(error => {
             // Manipula erros de solicitação
-            console.error('Erro ao pesquisar reserva:', erro);
-            alert('Erro ao pesquisar reserva. ', erro);
-        }
-    });
+            console.error('Erro ao pesquisar reserva:', error);
+            alert('Erro ao pesquisar reserva: ' + error.message);
+        });
+
     console.log("batata2")
 }
 
@@ -164,3 +169,25 @@ $(document).ready(function () {
         }
     });
 });
+
+$(document).ready(function() {
+    $.ajax({
+        url: '/tiposervico',
+        type: 'GET',
+        dataType: 'json', // Força a interpretação da resposta como JSON
+        success: function(data) {
+            // Limpa as opções atuais do campo tipo_servico
+            $('#tipo_servico').empty();
+            
+            // Adiciona as novas opções ao campo tipo_servico
+            data.forEach(function(opcao) {
+                var option = $('<option></option>').attr('value', opcao.id_service_plan).text(opcao.nom_service);
+                $('#tipo_servico').append(option);
+            });
+        },
+        error: function(error) {
+            console.error('Erro ao carregar opções do tipo de serviço:', error);
+        }
+    });
+});
+

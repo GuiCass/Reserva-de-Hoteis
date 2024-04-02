@@ -32,12 +32,18 @@ app.get('/reserva/:numeroReserva', async (req, res) => {
         const result = await pool.query(`SELECT id_reserva, cpf_resp, num_quarto FROM reserva WHERE id_reserva = ${numeroReserva}`);
         console.log(result)        
         // Verifica se há pelo menos um resultado retornado
-        if (result.rows.length > 0) {
+        if (result && result.length > 0 && result[0][0] && result[0][0].id_reserva !== undefined) {
             // Acessa o primeiro resultado (único neste caso)
-            const reserva = result.rows[0];
+            console.log("Achou")
+            const reserva = {
+                id_reserva: result[0][0].id_reserva,
+                cpf_resp: result[0][0].cpf_resp,
+                num_quarto: result[0][0].num_quarto
+            };
             console.log('Reserva encontrada:', reserva);
             res.json(reserva); // Envia a reserva como resposta
         } else {
+            console.log("Não Achou");
             // Se não houver resultados, envia uma resposta com status 404
             res.status(404).json({ message: 'Reserva não encontrada' });
         }
@@ -116,4 +122,20 @@ app.get('/reserva', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT} http://localhost:5500`);
+});
+
+app.get('/tiposervico', async (req, res) => {
+    try {
+        // Consulta ao banco de dados para obter os valores possíveis para tipo_servico
+        const tiposServico = await pool.query('select id_service_plan, nom_service from service_plan');
+        
+        // Extrai a matriz de resultados dos tipos de serviço
+        const tiposServicoRows = tiposServico[0];
+        
+        // Retorna apenas a matriz de resultados como JSON
+        res.json(tiposServicoRows);
+    } catch (error) {
+        console.error('Erro ao buscar opções do tipo de serviço:', error);
+        res.status(500).json({ message: 'Erro ao buscar opções do tipo de serviço' });
+    }
 });
