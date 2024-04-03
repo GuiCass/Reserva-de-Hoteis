@@ -68,7 +68,7 @@
                 <div class="col-md-12">
                     <div class="form-group">
                         <label for="cpf">CPF:</label>
-                        <input type="text" id="cpf" name="cpf" class="cpf-mask">
+                        <input type="text" id="cpf" name="cpf" maxlength="14" oninput="formatarCPF(this)" placeholder="000.000.000-00">
                     </div>
                 </div>
                 <div class="col-md-12">
@@ -105,23 +105,20 @@
                     <div class="form-group">
                         <label for="tipo_pagamento">Tipo de Pagamento:</label>
                         <select id="tipo_pagamento" name="tipo_pagamento" class="form-control">
-                            <option value="pagamento1">Pagamento 1</option>
-                            <option value="pagamento2">Pagamento 2</option>
-                            <option value="pagamento3">Pagamento 3</option>
                         </select>
                     </div>
                 </div>
                 <div class="col-md-12">
                     <div class="form-group">
                         <label for="checkin_in">Check-in:</label>
-                        <input type="text" id="checkin_in" name="checkin_in" class="datetime-mask">
+                        <input type="text" id="checkin_in" name="checkin_in" maxlength="10" oninput="formatarData(this)" placeholder="DD/MM/YYYY">
                     </div>
                 </div>
                 <div class="col-md-12">
                     <div class="form-group">
-                        <label for="checkin_out">Check-out:</label>
-                        <input type="text" id="checkin_out" name="checkin_out" class="datetime-mask">
-                    </div>
+                        <label for="checkin_in">Check-out:</label>
+                        <input type="text" id="checkin_out" name="checkin_out" maxlength="10" oninput="formatarData(this)" placeholder="DD/MM/YYYY">
+                    </div>                    
                 </div>
             </div>
         </div>
