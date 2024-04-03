@@ -168,6 +168,62 @@ app.delete('/reserva/:id', async (req, res) => {
     }
 });
 
+// Rota para pesquisar reserva pelo número de reserva
+app.get('/hospede/:cpfHospede', async (req, res) => {
+    const cpfHospede = req.params.cpfHospede;
+    try {
+        const result = await pool.query(`SELECT 
+        cpf_resp, nome, data_nasc, genero, nom_genero 
+        FROM hospede 
+        inner join genero on genero.id_gen = hospede.genero
+        WHERE cpf_resp = ${cpfHospede}`);       
+        // Verifica se há pelo menos um resultado retornado
+        if (result && result.length > 0 && result[0][0] && result[0][0].cpf_resp !== undefined) {
+            // Acessa o primeiro resultado (único neste caso)
+            const reserva = {
+                cpf_resp: result[0][0].cpf_resp,
+                data_nasc: result[0][0].data_nasc,
+                nome: result[0][0].nome,
+                genero: result[0][0].genero,
+                nom_genero: result[0][0].nom_genero
+            };
+            console.log('Hospede encontrado:', reserva);
+            res.json(reserva); // Envia a reserva como resposta
+        } else {
+            // Se não houver resultados, envia uma resposta com status 404
+            res.status(404).json({ message: 'Hospede não encontrada' });
+        }
+    } catch (err) {
+        console.error('Erro ao buscar Hospede', err);
+        res.status(500).json({ message: 'Erro ao buscar Hospede' });
+    }
+});
+
+app.post('/hospede', async (req, res) => {
+    const { cpf_resp, nome, genero, data_nasc } = req.body;
+    try {
+        await pool.query(
+            `INSERT INTO hospede 
+            (cpf_resp, nome, genero, data_nasc) 
+            VALUES (${cpf_resp}, '${nome}', ${genero}, '${formatarDataParaBanco(data_nasc)}')`
+        );        
+        const result = await pool.query(`SELECT 
+        cpf_resp, nome, data_nasc, genero, nom_genero 
+        FROM hospede 
+        inner join genero on genero.id_gen = hospede.genero
+        WHERE cpf_resp = ${cpf_resp}`);
+        const novoHospede = {
+            cpf_resp: result[0][0].cpf_resp,
+            nome: result[0][0].nome,
+            genero: result[0][0].genero,
+            data_nasc: result[0][0].data_nasc
+        };
+        res.status(201).json(novoHospede);
+    } catch (err) {
+        console.error('Erro ao cadastrar reserva', err);
+        res.status(500).json({ message: 'Erro ao cadastrar reserva' });
+    }
+});
 
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
@@ -251,6 +307,22 @@ app.get('/tipopagamento', async (req, res) => {
     } catch (error) {
         console.error('Erro ao buscar opções do tipo de Pagamento:', error);
         res.status(500).json({ message: 'Erro ao buscar opções do tipo de pagamento' });
+    }
+});
+
+app.get('/genero', async (req, res) => {
+    try {
+        // Consulta ao banco de dados para obter os valores possíveis para tipo_servico
+        const tiposGenero = await pool.query('select id_gen, nom_genero from genero');
+        
+        // Extrai a matriz de resultados dos tipos de pagamento
+        const tiposGeneroRows = tiposGenero[0];
+        
+        // Retorna apenas a matriz de resultados como JSON
+        res.json(tiposGeneroRows);
+    } catch (error) {
+        console.error('Erro ao buscar opções do tipo de genero:', error);
+        res.status(500).json({ message: 'Erro ao buscar opções do tipo de genero' });
     }
 });
 

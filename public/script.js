@@ -29,7 +29,6 @@ function pesquisarReserva() {
 }
 
 function cadastrarReserva() {
-    console.log("********Chamou o cadastrar********");
     // Obtém os valores inseridos nos campos do formulário
     const id_reserva = $('#numero_reserva').val();
     const cpf_resp = cpfParaNumeros($('#cpf').val());
@@ -77,7 +76,6 @@ function cadastrarReserva() {
 
 
 async function atualizarReserva() {
-    console.log("********Chamou o atualizar********");
     // Obtém os valores inseridos nos campos do formulário
     const id_reserva = $('#numero_reserva').val();
     const cpf_resp = cpfParaNumeros($('#cpf').val());
@@ -155,6 +153,68 @@ function removerReserva() {
         error: function(error) {
             console.error('Erro ao remover reserva:', error);
             alert('Erro ao remover reserva. Verifique o console para mais detalhes.');
+        }
+    });
+}
+
+function pesquisarHospede() {
+    const cpfHospede = cpfParaNumeros(document.getElementById('cpf').value);
+
+    // Realiza a solicitação usando fetch
+    fetch('/hospede/' + cpfHospede)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao pesquisar hospede');
+            }
+            return response.json();
+        })
+        .then(hospede => {
+            // Manipula a resposta recebida do servidor
+
+            // Preenche os outros campos com os valores do hospede
+            document.getElementById('cpf').value = hospede.cpf_resp.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+            document.getElementById('nome').value = hospede.nome;
+            document.getElementById('dtcNasc').value = formatarDataBanco(hospede.data_nasc);
+            document.getElementById('genero').value = hospede.genero;
+        })
+        .catch(error => {
+            // Manipula erros de solicitação
+            console.error('Erro ao pesquisar hospede:', error);
+            alert('Erro ao pesquisar hospede: ' + error.message);
+        });
+}
+
+function cadastrarHospede() {
+    // Obtém os valores inseridos nos campos do formulário
+    const cpf_resp = cpfParaNumeros($('#cpf').val());
+    const data_nasc = $('#dtcNasc').val();
+    const genero = $('#genero').val();
+    const nome = $('#nome').val();
+
+    // Cria um objeto com os dados da hospede
+    const reserva = {
+        cpf_resp: cpf_resp,
+        data_nasc: data_nasc,
+        genero: genero,
+        nome: nome
+    };
+
+    // Realiza a solicitação AJAX usando jQuery
+    $.ajax({
+        url: '/hospede',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(reserva),
+        success: function(response) {
+            document.getElementById('cpf').value = response.cpf_resp.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+            document.getElementById('nome').value = response.nome;
+            document.getElementById('dtcNasc').value = formatarDataBanco(response.data_nasc);
+            document.getElementById('genero').value = response.genero;
+            alert('Reserva cadastrada com sucesso!');
+        },
+        error: function(error) {
+            console.error('Erro ao cadastrar hospede:', error);
+            alert('Erro ao cadastrar hospede. Verifique o console para mais detalhes.');
         }
     });
 }
@@ -261,6 +321,28 @@ $(document).ready(function() {
     });
 });
 
+$(document).ready(function() {
+    // Adiciona a opção "Selecione" ao campo tipo_servico
+    $('#genero').append('<option value="">Selecione</option>');
+
+    // Realiza a requisição AJAX para obter os dados dos tipos de serviço
+    $.ajax({
+        url: '/genero',
+        type: 'GET',
+        dataType: 'json', // Força a interpretação da resposta como JSON
+        success: function(data) {
+            // Adiciona as novas opções ao campo tipo_servico
+            data.forEach(function(opcao) {
+                var option = $('<option></option>').attr('value', opcao.id_gen).text(opcao.nom_genero);
+                $('#genero').append(option);
+            });
+        },
+        error: function(error) {
+            console.error('Erro ao carregar opções do tipo de genero:', error);
+        }
+    });
+});
+
 function formatarCPF(campo) {
     var valor = campo.value.replace(/\D/g, '');
     if (valor.length > 3) {
@@ -328,4 +410,12 @@ function limparReserva() {
     document.getElementById('tipo_pagamento').value = '';
     document.getElementById('checkin_in').value = '';
     document.getElementById('checkin_out').value = '';
+}
+
+function limparHospede() {
+    // Limpa os valores dos campos do formulário
+    document.getElementById('cpf').value = '';
+    document.getElementById('nome').value = '';
+    document.getElementById('genero').value = '';
+    document.getElementById('dtcNasc').value = '';
 }
