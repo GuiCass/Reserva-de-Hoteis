@@ -225,6 +225,71 @@ app.post('/hospede', async (req, res) => {
     }
 });
 
+app.put('/hospede/:cpf_resp', async (req, res) => {
+    const cpfHospede = req.params.cpfHospede;
+    const { cpf_resp, nome, genero, data_nasc } = req.body;
+
+    try {
+        // Verifica se a reserva com o ID especificado existe no banco de dados
+        // Se não existir, retorna um erro 404 (Not Found)
+        const hospedeExistente = await pool.query(`SELECT * FROM hospede WHERE cpf_resp = ${cpf_resp}`);
+        if (!(hospedeExistente && hospedeExistente.length > 0 && hospedeExistente[0][0] && hospedeExistente[0][0].cpf_resp !== undefined)) {
+            return res.status(404).json({ message: 'Hospede não encontrada' });
+        }
+
+        // Atualiza a Hospede no banco de dados com os novos valores
+        await pool.query(
+            `UPDATE hospede 
+             SET nome = '${nome}', data_nasc = '${formatarDataParaBanco(data_nasc)}', genero = ${genero}
+             where cpf_resp = ${cpf_resp}`
+        );
+
+        const result = await pool.query(
+            `SELECT 
+            cpf_resp, nome, data_nasc, genero 
+            FROM hospede 
+            WHERE cpf_resp = ${cpf_resp}`
+        );
+        const novoHospede = {
+            cpf_resp: result[0][0].cpf_resp,
+            nome: result[0][0].nome,
+            genero: result[0][0].genero,
+            data_nasc: result[0][0].data_nasc
+        };
+        res.status(200).json(novoHospede);
+    } catch (err) {
+        console.error('Erro ao atualizar Hospede:', err);
+        res.status(500).json({ message: 'Erro ao atualizar Hospede' });
+    }
+});
+
+app.delete('/hospede/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const resultSelect = await pool.query(
+            `SELECT 
+            cpf_resp
+            FROM hospede
+            WHERE cpf_resp = ${id}`
+        );
+        const hospede = {
+            id: resultSelect[0][0].cpf_resp
+        };
+        // Realize a consulta para excluir a hospede com o ID fornecido
+        if(hospede.id != undefined) {
+            const result = await pool.query(
+                `DELETE FROM hospede WHERE cpf_resp = ${id}`
+            );
+            res.status(200).json({ message: 'Hospede removida com sucesso.' });
+        } else {
+            res.status(404).json({ message: 'Hospede não encontrada.' });
+        }
+    } catch (err) {
+        console.error('Erro ao remover Hospede:', err);
+        res.status(500).json({ message: 'Erro ao remover Hospede.' });
+    }
+});
+
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 });

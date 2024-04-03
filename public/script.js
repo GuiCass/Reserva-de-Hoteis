@@ -192,7 +192,7 @@ function cadastrarHospede() {
     const nome = $('#nome').val();
 
     // Cria um objeto com os dados da hospede
-    const reserva = {
+    const hospede = {
         cpf_resp: cpf_resp,
         data_nasc: data_nasc,
         genero: genero,
@@ -204,7 +204,7 @@ function cadastrarHospede() {
         url: '/hospede',
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify(reserva),
+        data: JSON.stringify(hospede),
         success: function(response) {
             document.getElementById('cpf').value = response.cpf_resp.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
             document.getElementById('nome').value = response.nome;
@@ -215,6 +215,77 @@ function cadastrarHospede() {
         error: function(error) {
             console.error('Erro ao cadastrar hospede:', error);
             alert('Erro ao cadastrar hospede. Verifique o console para mais detalhes.');
+        }
+    });
+}
+
+async function atualizarHospede() {
+    // Obtém os valores inseridos nos campos do formulário
+    const cpf_resp = cpfParaNumeros($('#cpf').val());
+    const data_nasc = $('#dtcNasc').val();
+    const genero = $('#genero').val();
+    const nome = $('#nome').val();
+
+    // Cria um objeto com os dados da reserva
+    const hospede = {
+        cpf_resp: cpf_resp,
+        data_nasc: data_nasc,
+        genero: genero,
+        nome: nome
+    };
+
+    // Realiza a solicitação AJAX usando jQuery para verificar se a reserva existe
+    $.ajax({
+        url: `/hospede/${cpf_resp}`,
+        type: 'GET',
+        success: async function(response) {
+            if (response) {
+                // A hospede existe, então podemos prosseguir com a atualização
+                try {
+                    await $.ajax({
+                        url: `/hospede/${cpf_resp}`, 
+                        type: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify(hospede),
+                        success: function(response) {
+                            document.getElementById('cpf').value = response.cpf_resp.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+                            document.getElementById('nome').value = response.nome;
+                            document.getElementById('dtcNasc').value = formatarDataBanco(response.data_nasc);
+                            document.getElementById('genero').value = response.genero;
+                            alert('Reserva atualizada com sucesso!');
+                        },
+                        error: function(error) {
+                            console.error('Erro ao atualizar Hospede:', error);
+                            alert('Erro ao atualizar Hospede. Verifique o console para mais detalhes.');
+                        }
+                    });
+                } catch (err) {
+                    console.error('Erro ao realizar a atualização:', err);
+                    alert('Erro ao realizar a atualização. Verifique o console para mais detalhes.');
+                }
+            } else {
+                alert('A Hospede com o CPD especificado não foi encontrada.');
+            }
+        },
+        error: function(error) {
+            console.error('Erro ao verificar Hospede:', error);
+            alert('Erro ao verificar Hospede. Verifique o console para mais detalhes.');
+        }
+    });
+}
+
+function removerHospede() {
+    const cpf_resp = cpfParaNumeros($('#cpf').val());
+    $.ajax({
+        url: `/hospede/${cpf_resp}`,
+        type: 'DELETE',
+        success: function(response) {
+            alert(response.message);
+            limparHospede(); // Limpa os campos do formulário após a remoção
+        },
+        error: function(error) {
+            console.error('Erro ao remover hospede:', error);
+            alert('Erro ao remover hospede. Verifique o console para mais detalhes.');
         }
     });
 }
