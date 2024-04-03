@@ -144,8 +144,19 @@ async function atualizarReserva() {
 }
 
 function removerReserva() {
-    // Lógica para remover a reserva
-    alert("Função de remoção ainda não implementada!");
+    const id_reserva = $('#numero_reserva').val(); // Supondo que o número da reserva esteja no campo 'numero_reserva'
+    $.ajax({
+        url: `/reserva/${id_reserva}`,
+        type: 'DELETE',
+        success: function(response) {
+            alert(response.message);
+            limparReserva(); // Limpa os campos do formulário após a remoção
+        },
+        error: function(error) {
+            console.error('Erro ao remover reserva:', error);
+            alert('Erro ao remover reserva. Verifique o console para mais detalhes.');
+        }
+    });
 }
 
 function cadastrarQuarto() {
@@ -305,4 +316,16 @@ function formatarDataBanco(data) {
 function cpfParaNumeros(cpf) {
     // Remove todos os caracteres que não são dígitos e converte para inteiro
     return parseInt(cpf.replace(/\D/g, ''));
+}
+
+function limparReserva() {
+    // Limpa os valores dos campos do formulário
+    document.getElementById('numero_reserva').value = '';
+    document.getElementById('cpf').value = '';
+    document.getElementById('nome').value = '';
+    document.getElementById('quarto').value = '';
+    document.getElementById('tipo_servico').value = '';
+    document.getElementById('tipo_pagamento').value = '';
+    document.getElementById('checkin_in').value = '';
+    document.getElementById('checkin_out').value = '';
 }

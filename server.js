@@ -140,6 +140,35 @@ app.put('/reserva/:id_reserva', async (req, res) => {
     }
 });
 
+app.delete('/reserva/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const resultSelect = await pool.query(
+            `SELECT 
+            id_reserva
+            FROM reserva
+            WHERE id_reserva = ${id}`
+        );
+        const reserva = {
+            id: resultSelect[0][0].id_reserva
+        };
+        console.log(reserva.id);
+        // Realize a consulta para excluir a reserva com o ID fornecido
+        if(reserva.id != undefined) {
+            const result = await pool.query(
+                `DELETE FROM reserva WHERE id_reserva = ${id}`
+            );
+            res.status(200).json({ message: 'Reserva removida com sucesso.' });
+        } else {
+            res.status(404).json({ message: 'Reserva não encontrada.' });
+        }
+    } catch (err) {
+        console.error('Erro ao remover reserva:', err);
+        res.status(500).json({ message: 'Erro ao remover reserva.' });
+    }
+});
+
+
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 });
