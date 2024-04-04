@@ -6,20 +6,7 @@ const app = express();
 const PORT = 5500;
 
 const pool = require('./models/db')
-// Configuração da conexão com o banco de dados PostgreSQL
-//const pool = new Pool({
-//    user: 'seu_usuario',
-//    host: 'localhost',
-//    database: 'Hotel_Project',
-//    password: 'Gui@050322',
-//    port: 5432,
-//});
-
 app.use(bodyParser.json());
-
-//app.get("/", async (req, res) => {
- ///   res.send("Pagina Inicial")
-//})
 
 app.get("/", async (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
@@ -287,6 +274,161 @@ app.delete('/hospede/:id', async (req, res) => {
     } catch (err) {
         console.error('Erro ao remover Hospede:', err);
         res.status(500).json({ message: 'Erro ao remover Hospede.' });
+    }
+});
+
+app.get('/quarto/reserva/:idReserva', async (req, res) => {
+    const { idReserva } = req.params;
+    try {
+        const quartos = await pool.query(`
+            select quarto.num_quarto, 
+            status_quarto, 
+            quarto.id_reserva, hospede.cpf_resp,
+            reserva.date_check_in,
+            reserva.date_check_out
+            from quarto
+            inner join reserva on reserva.id_reserva = quarto.id_reserva
+            inner join hospede on hospede.cpf_resp = reserva.cpf_resp
+            where quarto.id_reserva = ${idReserva}
+            order by quarto.num_quarto asc
+        `);
+        res.json(quartos[0]);
+    } catch (error) {
+        console.error('Erro ao pesquisar quartos por reserva:', error);
+        res.status(500).json({ message: 'Erro ao pesquisar quartos por reserva.' });
+    }
+});
+
+app.get('/quarto/numero/:numQuarto', async (req, res) => {
+    const nume_quarto = req.params.numQuarto;
+    try {
+        const quartos = await pool.query(`
+            select quarto.num_quarto, 
+            status_quarto, 
+            quarto.id_reserva, hospede.cpf_resp,
+            reserva.date_check_in,
+            reserva.date_check_out
+            from quarto
+            inner join reserva on reserva.id_reserva = quarto.id_reserva
+            inner join hospede on hospede.cpf_resp = reserva.cpf_resp
+            where quarto.num_quarto = ${nume_quarto}
+            order by quarto.num_quarto asc
+        `);
+        res.json(quartos[0]);
+    } catch (error) {
+        console.error('Erro ao pesquisar quartos por numero:', error);
+        res.status(500).json({ message: 'Erro ao pesquisar quartos por numero.' });
+    }
+});
+
+app.post('/quarto', async (req, res) => {
+    const { num_quarto, status_quarto_ocupado, status_quarto_livre, id_reserva } = req.body;
+    try {
+        var status;
+        if (status_quarto_ocupado == true) {
+            status = 2;
+        } else {
+            status = 1;
+        }
+        await pool.query(
+            `INSERT INTO quarto 
+            (num_quarto, status_quarto, id_reserva) 
+            VALUES (${num_quarto}, '${status_quarto_ocupado == true ? 1 : 2}', ${id_reserva})`
+        );        
+        const result = await pool.query(`select quarto.num_quarto, 
+            status_quarto, 
+            quarto.id_reserva, hospede.cpf_resp,
+            reserva.date_check_in,
+            reserva.date_check_out
+            from quarto
+            inner join reserva on reserva.id_reserva = quarto.id_reserva
+            inner join hospede on hospede.cpf_resp = reserva.cpf_resp
+            where quarto.id_reserva = ${id_reserva}
+            order by quarto.num_quarto asc`);
+            res.json(result[0]);
+    } catch (err) {
+        console.error('Erro ao cadastrar quarto', err);
+        res.status(500).json({ message: 'Erro ao cadastrar quarto' });
+    }
+});
+
+app.put('/quarto/:numQuarto', async (req, res) => {
+    const { num_quarto, status_quarto_ocupado, id_reserva, id_reserva_go } = req.body;
+    const reservaInicial = id_reserva;
+    console.log('************************');
+    console.log(id_reserva);
+    console.log(reservaInicial);
+    console.log(id_reserva_go);
+
+    try {
+        // Verifica se a quarto com o ID especificado existe no banco de dados
+        // Se não existir, retorna um erro 404 (Not Found)
+        const quartoExistente = await pool.query(`SELECT * FROM quarto WHERE num_quarto = ${num_quarto}`);
+        if (!(quartoExistente && quartoExistente.length > 0 && quartoExistente[0][0] && quartoExistente[0][0].num_quarto !== undefined)) {
+            return res.status(404).json({ message: 'Quarto não encontrada' });
+        }
+
+        // Atualiza a Quarto no banco de dados com os novos valores
+        await pool.query(
+            `UPDATE quarto 
+             SET status_quarto = '${status_quarto_ocupado == true ? 1 : 2}', 
+             id_reserva = '${id_reserva_go}'
+             where num_quarto = ${num_quarto}`
+        );
+
+        const result = await pool.query(
+            `select quarto.num_quarto, 
+            status_quarto, 
+            quarto.id_reserva, hospede.cpf_resp,
+            reserva.date_check_in,
+            reserva.date_check_out
+            from quarto
+            inner join reserva on reserva.id_reserva = quarto.id_reserva
+            inner join hospede on hospede.cpf_resp = reserva.cpf_resp
+            where quarto.id_reserva = ${reservaInicial}
+            order by quarto.num_quarto asc`
+        );
+        res.json(result[0]);
+    } catch (err) {
+        console.error('Erro ao atualizar Hospede:', err);
+        res.status(500).json({ message: 'Erro ao atualizar Hospede' });
+    }
+});
+
+app.delete('/quarto/:num_quarto', async (req, res) => {
+    const { id_reserva } = req.body;
+    const { num_quarto } = req.params;
+    try {
+        const resultSelect = await pool.query(
+            `SELECT * FROM quarto WHERE num_quarto = ${num_quarto}`
+        );
+        const quarto = {
+            num_quarto: resultSelect[0][0].num_quarto
+        };
+        // Realize a consulta para excluir a hospede com o ID fornecido
+        if(quarto.num_quarto != undefined) {
+            await pool.query(
+                `DELETE FROM quarto WHERE num_quarto = ${num_quarto}`
+            );
+            const result = await pool.query(
+                `select quarto.num_quarto, 
+                status_quarto, 
+                quarto.id_reserva, hospede.cpf_resp,
+                reserva.date_check_in,
+                reserva.date_check_out
+                from quarto
+                inner join reserva on reserva.id_reserva = quarto.id_reserva
+                inner join hospede on hospede.cpf_resp = reserva.cpf_resp
+                where quarto.id_reserva = ${id_reserva}
+                order by quarto.num_quarto asc`
+            );
+            res.json(result[0]);
+        } else {
+            res.status(404).json({ message: 'quarto não encontrada.' });
+        }
+    } catch (err) {
+        console.error('Erro ao remover quarto:', err);
+        res.status(500).json({ message: 'Erro ao remover quarto.' });
     }
 });
 

@@ -290,27 +290,223 @@ function removerHospede() {
     });
 }
 
-function cadastrarQuarto() {
-    // Aqui você pode adicionar o código JavaScript para enviar os dados do formulário para o servidor
-    // Por exemplo, usando AJAX para enviar uma solicitação POST para um endpoint no backend
-    // Você também pode validar os campos do formulário antes de enviar os dados
-    alert("Quarto cadastrada com sucesso!");
-}
-
-function atualizarQuarto() {
-    // Lógica para atualizar a reserva
-    alert("Função de atualização ainda não implementada!");
-}
-
-function removerQuarto() {
-    // Lógica para remover a reserva
-    alert("Função de remoção ainda não implementada!");
-}
-
 function pesquisarQuarto() {
-    // Aqui você pode adicionar o código JavaScript para pesquisar a reserva com base no número de reserva
-    // Por exemplo, usando AJAX para enviar uma solicitação GET para buscar os detalhes da reserva no backend
-    alert("Pesquisando quarto...");
+    const idReserva = $('#idReserva').val();
+    
+    $.ajax({
+        url: `/quarto/reserva/${idReserva}`,
+        type: 'GET',
+        success: function(response) {
+            // Limpa a tabela antes de preenchê-la
+            $('#tabelaQuartos tbody').empty();
+            limparTabela();
+            // Preenche a tabela com os quartos encontrados
+            response.forEach(quarto => {
+                $('#tabelaQuartos tbody').append(`
+                    <tr>
+                        <td><input type="number" value="${quarto.num_quarto}" readonly style="border: none;"></td>
+                        <td><input type="text" value="${quarto.cpf_resp.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")}" maxlength="14" oninput="formatarCPF(this)" placeholder="000.000.000-00" readonly style="border: none;"></td>
+                        <td>
+                            <select>
+                                <option value="1" ${quarto.status_quarto == 1 ? 'selected' : ''}>Sim</option>
+                                <option value="2" ${quarto.status_quarto == 2 ? 'selected' : ''}>Não</option>
+                            </select>
+                        </td>
+                        <td><input type="text" value="${formatarDataBanco(quarto.date_check_in)}" maxlength="10" oninput="formatarData(this)" placeholder="DD/MM/YYYY" readonly style="border: none;"></td>
+                        <td><input type="text" value="${formatarDataBanco(quarto.date_check_out)}" maxlength="10" oninput="formatarData(this)" placeholder="DD/MM/YYYY" readonly style="border: none;"></td>    
+                        <td><input type="number" value="${quarto.id_reserva}" id="idReservaTable${quarto.num_quarto}"></td>
+                        <td>
+                            <button onclick="atualizarQuarto(${quarto.num_quarto}, $('#idReservaTable${quarto.num_quarto}').val())" class="btn btn-primary">Atualizar</button>
+                            <button onclick="removerQuarto(${quarto.num_quarto}, $('#idReservaTable${quarto.num_quarto}').val())" class="btn btn-danger">Remover</button>
+                        </td>
+                    </tr>
+                `);
+            });
+        },
+        error: function(error) {
+            console.error('Erro ao pesquisar quartos por reserva:', error);
+            alert('Erro ao pesquisar quartos por reserva. Verifique o console para mais detalhes.');
+        }
+    });
+}
+
+
+function cadastrarQuarto() {
+    // Obtém os valores inseridos nos campos do formulário
+    const num_quarto = $('#numero_quarto').val();
+    const status_quarto_ocupado = $('#ocupado_sim').is(':checked');
+    const status_quarto_livre = $('#ocupado_nao').is(':checked');
+    const id_reserva = $('#idReserva').val();
+
+    // Cria um objeto com os dados da hospede
+    const quarto = {
+        num_quarto: num_quarto,
+        status_quarto_ocupado: status_quarto_ocupado,
+        status_quarto_livre: status_quarto_livre,
+        id_reserva: id_reserva
+    };
+
+    // Realiza a solicitação AJAX usando jQuery
+    $.ajax({
+        url: '/quarto',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(quarto),
+        success: function(response) {
+            limparTabela();
+            response.forEach(quarto => {
+                $('#tabelaQuartos tbody').append(`
+                    <tr>
+                        <td><input type="number" value="${quarto.num_quarto}" readonly style="border: none;"></td>
+                        <td><input type="text" value="${quarto.cpf_resp.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")}" maxlength="14" oninput="formatarCPF(this)" placeholder="000.000.000-00" readonly style="border: none;"></td>
+                        <td>
+                            <select>
+                                <option value="1" ${quarto.status_quarto == 1 ? 'selected' : ''}>Sim</option>
+                                <option value="2" ${quarto.status_quarto == 2 ? 'selected' : ''}>Não</option>
+                            </select>
+                        </td>
+                        <td><input type="text" value="${formatarDataBanco(quarto.date_check_in)}" maxlength="10" oninput="formatarData(this)" placeholder="DD/MM/YYYY" readonly style="border: none;"></td>
+                        <td><input type="text" value="${formatarDataBanco(quarto.date_check_out)}" maxlength="10" oninput="formatarData(this)" placeholder="DD/MM/YYYY" readonly style="border: none;"></td>    
+                        <td><input type="number" value="${quarto.id_reserva}" id="idReservaTable${quarto.num_quarto}"></td>
+                        <td>
+                            <button onclick="atualizarQuarto(${quarto.num_quarto}, $('#idReservaTable${quarto.num_quarto}').val())" class="btn btn-primary">Atualizar</button>
+                            <button onclick="removerQuarto(${quarto.num_quarto}, $('#idReservaTable${quarto.num_quarto}').val())" class="btn btn-danger">Remover</button>
+                        </td>
+                    </tr>
+                `);
+            });
+            alert('Quarto cadastrada com sucesso!');
+        },
+        error: function(error) {
+            console.error('Erro ao cadastrar quarto:', error);
+            alert('Erro ao cadastrar quarto. Verifique o console para mais detalhes.');
+        }
+    });
+}
+
+function atualizarQuarto(num_quarto, id_reserva_go) {
+    // Obtém os valores inseridos nos campos do formulário
+    const status_quarto_ocupado = $('#ocupado_sim').is(':checked');
+    const status_quarto_livre = $('#ocupado_nao').is(':checked');
+    const id_reserva = $('#idReserva').val();
+
+    // Cria um objeto com os dados da reserva
+    const quarto = {
+        num_quarto: num_quarto,
+        status_quarto_ocupado: status_quarto_ocupado,
+        status_quarto_livre: status_quarto_livre,
+        id_reserva: id_reserva,
+        id_reserva_go: id_reserva_go
+    };
+
+    // Realiza a solicitação AJAX usando jQuery para verificar se a reserva existe
+    $.ajax({
+        url: `/quarto/numero/${num_quarto}`,
+        type: 'GET',
+        success: async function(response) {
+            if (response) {
+                // A Quarto existe, então podemos prosseguir com a atualização
+                try {
+                    await $.ajax({
+                        url: `/quarto/${num_quarto}`, 
+                        type: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify(quarto),
+                        success: function(response) {
+                            limparTabela();
+                            response.forEach(quarto => {
+                                $('#tabelaQuartos tbody').append(`
+                                    <tr>
+                                        <td><input type="number" value="${quarto.num_quarto}" readonly style="border: none;"></td>
+                                        <td><input type="text" value="${quarto.cpf_resp.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")}" maxlength="14" oninput="formatarCPF(this)" placeholder="000.000.000-00" readonly style="border: none;"></td>
+                                        <td>
+                                            <select>
+                                                <option value="1" ${quarto.status_quarto == 1 ? 'selected' : ''}>Sim</option>
+                                                <option value="2" ${quarto.status_quarto == 2 ? 'selected' : ''}>Não</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" value="${formatarDataBanco(quarto.date_check_in)}" maxlength="10" oninput="formatarData(this)" placeholder="DD/MM/YYYY" readonly style="border: none;"></td>
+                                        <td><input type="text" value="${formatarDataBanco(quarto.date_check_out)}" maxlength="10" oninput="formatarData(this)" placeholder="DD/MM/YYYY" readonly style="border: none;"></td>    
+                                        <td><input type="number" value="${quarto.id_reserva}" id="idReservaTable${quarto.num_quarto}"></td>
+                                        <td>
+                                            <button onclick="atualizarQuarto(${quarto.num_quarto}, $('#idReservaTable${quarto.num_quarto}').val())" class="btn btn-primary">Atualizar</button>
+                                            <button onclick="removerQuarto(${quarto.num_quarto}, $('#idReservaTable${quarto.num_quarto}').val())" class="btn btn-danger">Remover</button>
+                                        </tr>
+                                `);
+                            });
+                            alert('Quarto atualizada com sucesso!');
+                        },
+                        error: function(error) {
+                            console.error('Erro ao atualizar Quarto:', error);
+                            alert('Erro ao atualizar Quarto. Verifique o console para mais detalhes.');
+                        }
+                    });
+                } catch (err) {
+                    console.error('Erro ao realizar a atualização:', err);
+                    alert('Erro ao realizar a atualização. Verifique o console para mais detalhes.');
+                }
+            } else {
+                alert('A Quarto com o numero especificado não foi encontrada.');
+            }
+        },
+        error: function(error) {
+            console.error('Erro ao verificar Hospede:', error);
+            alert('Erro ao verificar Hospede. Verifique o console para mais detalhes.');
+        }
+    });
+}
+
+function removerQuarto(num_quarto, id_reserva) {
+    // Obtém os valores inseridos nos campos do formulário
+    const status_quarto_ocupado = $('#ocupado_sim').is(':checked');
+    const status_quarto_livre = $('#ocupado_nao').is(':checked');
+    //const id_reserva = $('#idReserva').val();
+    //const teste = $(`#idReservaTable${num_quarto}`).val();
+
+    // Cria um objeto com os dados da reserva
+    const quarto = {
+        num_quarto: num_quarto,
+        status_quarto_ocupado: status_quarto_ocupado,
+        status_quarto_livre: status_quarto_livre,
+        id_reserva: id_reserva
+    };
+
+    $.ajax({
+        url: `/quarto/${num_quarto}`,
+        type: 'DELETE',
+        contentType: 'application/json',
+        data: JSON.stringify(quarto),
+        success: function(response) {
+            limparTabela(); // Limpa os campos do formulário após a remoção
+            response.forEach(quarto => {
+                $('#tabelaQuartos tbody').append(`
+                    <tr>
+                        <td><input type="number" value="${quarto.num_quarto}" readonly style="border: none;"></td>
+                        <td><input type="text" value="${quarto.cpf_resp.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")}" maxlength="14" oninput="formatarCPF(this)" placeholder="000.000.000-00" readonly style="border: none;"></td>
+                        <td>
+                            <select>
+                                <option value="1" ${quarto.status_quarto == 1 ? 'selected' : ''}>Sim</option>
+                                <option value="2" ${quarto.status_quarto == 2 ? 'selected' : ''}>Não</option>
+                            </select>
+                        </td>
+                        <td><input type="text" value="${formatarDataBanco(quarto.date_check_in)}" maxlength="10" oninput="formatarData(this)" placeholder="DD/MM/YYYY" readonly style="border: none;"></td>
+                        <td><input type="text" value="${formatarDataBanco(quarto.date_check_out)}" maxlength="10" oninput="formatarData(this)" placeholder="DD/MM/YYYY" readonly style="border: none;"></td>    
+                        <td><input type="number" value="${quarto.id_reserva}" id="idReservaTable${quarto.num_quarto}"></td>
+                        <td>
+                            <button onclick="atualizarQuarto(${quarto.num_quarto}, $('#idReservaTable${quarto.num_quarto}').val())" class="btn btn-primary">Atualizar</button>
+                            <button onclick="removerQuarto(${quarto.num_quarto}, $('#idReservaTable${quarto.num_quarto}').val())" class="btn btn-danger">Remover</button>
+                        </td>
+                    </tr>
+                `);
+            });
+            //alert(response.message);
+            alert('Sucesso');
+        },
+        error: function(error) {
+            console.error('Erro ao remover quarto:', error);
+            alert('Erro ao remover quarto. Verifique o console para mais detalhes.');
+        }
+    });
 }
 
 function pesquisarAnimal() {
@@ -456,11 +652,9 @@ function formatarDataBanco(data) {
 
         // Reorganizando as partes na ordem desejada (dia, mês, ano)
         var dataFormatada = partes[2] + '/' + partes[1] + '/' + partes[0];
-        console.log("teste data: " + dataFormatada);
         // Retorna a data formatada
         return dataFormatada;
     } else {
-        console.log("teste data: ");
         // Retorna a própria data se não estiver no formato correto
         return data;
     }
@@ -489,4 +683,16 @@ function limparHospede() {
     document.getElementById('nome').value = '';
     document.getElementById('genero').value = '';
     document.getElementById('dtcNasc').value = '';
+}
+
+function limparQuarto(){
+    // Limpa os campos de entrada
+    $('#numero_quarto').val('');
+    $('#ocupado_sim').prop('checked', false);
+    $('#ocupado_nao').prop('checked', false);
+    $('#idReserva').val('');
+}
+
+function limparTabela(){
+    $('#tabelaQuartos tbody').empty();
 }
