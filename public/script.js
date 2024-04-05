@@ -15,7 +15,6 @@ function pesquisarReserva() {
             // Preenche os outros campos com os valores da reserva
             document.getElementById('cpf').value = reserva.cpf_resp.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
             document.getElementById('nome').value = reserva.nome;
-            document.getElementById('quarto').value = reserva.num_quarto;
             document.getElementById('tipo_servico').value = reserva.id_service_plan;
             document.getElementById('tipo_pagamento').value = reserva.id_pag;
             document.getElementById('checkin_in').value = formatarDataBanco(reserva.date_check_in);
@@ -32,7 +31,6 @@ function cadastrarReserva() {
     // Obtém os valores inseridos nos campos do formulário
     const id_reserva = $('#numero_reserva').val();
     const cpf_resp = cpfParaNumeros($('#cpf').val());
-    const num_quarto = $('#quarto').val();
     const id_service_plan = $('#tipo_servico').val();
     const id_pag = $('#tipo_pagamento').val();
     const date_check_in = $('#checkin_in').val();
@@ -43,7 +41,6 @@ function cadastrarReserva() {
     const reserva = {
         id_reserva: id_reserva,
         cpf_resp: cpf_resp,
-        num_quarto: num_quarto,
         id_service_plan: id_service_plan,
         id_pag: id_pag,
         date_check_in: date_check_in,
@@ -60,7 +57,6 @@ function cadastrarReserva() {
         success: function(response) {
             document.getElementById('cpf').value = response.cpf_resp.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
             document.getElementById('nome').value = response.nome;
-            document.getElementById('quarto').value = response.num_quarto;
             document.getElementById('tipo_servico').value = response.id_service_plan;
             document.getElementById('tipo_pagamento').value = response.id_pag;
             document.getElementById('checkin_in').value = formatarDataBanco(response.date_check_in);
@@ -79,7 +75,6 @@ async function atualizarReserva() {
     // Obtém os valores inseridos nos campos do formulário
     const id_reserva = $('#numero_reserva').val();
     const cpf_resp = cpfParaNumeros($('#cpf').val());
-    const num_quarto = $('#quarto').val();
     const id_service_plan = $('#tipo_servico').val();
     const id_pag = $('#tipo_pagamento').val();
     const date_check_in = $('#checkin_in').val();
@@ -90,7 +85,6 @@ async function atualizarReserva() {
     const reserva = {
         id_reserva: id_reserva,
         cpf_resp: cpf_resp,
-        num_quarto: num_quarto,
         id_service_plan: id_service_plan,
         id_pag: id_pag,
         date_check_in: date_check_in,
@@ -114,7 +108,6 @@ async function atualizarReserva() {
                         success: function(response) {
                             document.getElementById('cpf').value = response.cpf_resp.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
                             document.getElementById('nome').value = response.nome;
-                            document.getElementById('quarto').value = response.num_quarto;
                             document.getElementById('tipo_servico').value = response.id_service_plan;
                             document.getElementById('tipo_pagamento').value = response.id_pag;
                             document.getElementById('checkin_in').value = formatarDataBanco(response.date_check_in);
@@ -510,26 +503,201 @@ function removerQuarto(num_quarto, id_reserva) {
 }
 
 function pesquisarAnimal() {
-    // Aqui você pode adicionar o código JavaScript para pesquisar a reserva com base no número de reserva
-    // Por exemplo, usando AJAX para enviar uma solicitação GET para buscar os detalhes da reserva no backend
-    alert("Pesquisando animal...");
-}
+    const numReserva = $('#numero_reserva').val();
+    
+    $.ajax({
+        url: `/animal/reserva/${numReserva}`,
+        type: 'GET',
+        success: function(response) {
+            // Limpa a tabela antes de preenchê-la
+            $('#tabelaAnimal tbody').empty();
+            limparTabelaAnimal();
+            // Preenche a tabela com os quartos encontrados
+            response.forEach(animal => {
+                $('#tabelaAnimal tbody').append(`
+                    <tr>
+                        <td><input type="number" value="${animal.id_animal}" readonly style="border: none;"></td>
+                        <td><input type="text" id="idNomeTable${animal.id_animal}" value="${animal.nom_animal}"></td>
+                        <td>
+                            <select class="form-control edit-raca" id="idRacaTable${animal.id_animal}">
+                                <!-- Opções da dropdown list são carregadas via JavaScript -->
+                            </select>
+                        </td>
+                        <td>
+                            <select id="idPedigreTable${animal.id_animal}">
+                                <option value="1" ${animal.pedigre == 1 ? 'selected' : ''}>Sim</option>
+                                <option value="2" ${animal.pedigre == 2 ? 'selected' : ''}>Não</option>
+                            </select>
+                        </td>
+                        <td><input type="number" value="${animal.id_reserva}" id="idReservaTable${animal.id_animal}"></td>
+                        <td>
+                            <button onclick="atualizarAnimal(${animal.id_animal}, $('#idReservaTable${animal.id_animal}').val(), $('#idNomeTable${animal.id_animal}').val(), $('#idRacaTable${animal.id_animal}').val(), $('#idPedigreTable${animal.id_animal}').val())" class="btn btn-primary">Atualizar</button>
+                            <button onclick="removerAnimal(${animal.id_animal}, $('#idReservaTable${animal.id_animal}').val(), $('#idNomeTable${animal.id_animal}').val(), $('#idRacaTable${animal.id_animal}').val(), $('#idPedigreTable${animal.id_animal}').val())" class="btn btn-danger">Remover</button>
+                        </td>
+                    </tr>
+                `);
 
-function atualizarAnimal() {
-    // Lógica para atualizar a reserva
-    alert("Função de atualização ainda não implementada!");
-}
-
-function removerAnimal() {
-    // Lógica para remover a reserva
-    alert("Função de remoção ainda não implementada!");
+                // Adiciona as opções da dropdown list para a raça deste animal
+                addOpcoesRaca(animal.id_animal, animal.id_raca);
+            });
+        },
+        error: function(error) {
+            console.error('Erro ao pesquisar quartos por reserva:', error);
+            alert('Erro ao pesquisar quartos por reserva. Verifique o console para mais detalhes.');
+        }
+    });
 }
 
 function cadastrarAnimal() {
-    // Aqui você pode adicionar o código JavaScript para enviar os dados do formulário para o servidor
-    // Por exemplo, usando AJAX para enviar uma solicitação POST para um endpoint no backend
-    // Você também pode validar os campos do formulário antes de enviar os dados
-    alert("Animal cadastrada com sucesso!");
+    // Obtém os valores inseridos nos campos do formulário
+    const numero_reserva = $('#numero_reserva').val();
+    const nom_animal = $('#nom_animal').val();
+    const status_quarto_ocupado = $('#pedigre_sim').is(':checked');
+    const raca = $('#raca').val();
+
+    // Cria um objeto com os dados do animal
+    const animal = {
+        numero_reserva: numero_reserva,
+        nom_animal: nom_animal,
+        status_quarto_ocupado: status_quarto_ocupado,
+        raca: raca
+    };
+
+    // Realiza a solicitação AJAX para cadastrar o animal
+    $.ajax({
+        url: '/animal',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(animal),
+        success: function(response) {
+            // Limpa a tabela
+            limparTabelaAnimal();
+
+            // Carrega os dados do animal na tabela
+            response.forEach(animal => {
+                $('#tabelaAnimal tbody').append(`
+                    <tr>
+                        <td><input type="number" value="${animal.id_animal}" readonly style="border: none;"></td>
+                        <td><input type="text" id="idNomeTable${animal.id_animal}" value="${animal.nom_animal}"></td>
+                        <td>
+                            <select class="form-control edit-raca" id="idRacaTable${animal.id_animal}">
+                                <!-- Opções da dropdown list são carregadas via JavaScript -->
+                            </select>
+                        </td>
+                        <td>
+                            <select id="idPedigreTable${animal.id_animal}">
+                                <option value="1" ${animal.pedigre == 1 ? 'selected' : ''}>Sim</option>
+                                <option value="2" ${animal.pedigre == 2 ? 'selected' : ''}>Não</option>
+                            </select>
+                        </td>
+                        <td><input type="number" value="${animal.id_reserva}" id="idReservaTable${animal.id_animal}"></td>
+                        <td>
+                            <button onclick="atualizarAnimal(${animal.id_animal}, $('#idReservaTable${animal.id_animal}').val(), $('#idNomeTable${animal.id_animal}').val(), $('#idRacaTable${animal.id_animal}').val(), $('#idPedigreTable${animal.id_animal}').val())" class="btn btn-primary">Atualizar</button>
+                            <button onclick="removerAnimal(${animal.id_animal}, $('#idReservaTable${animal.id_animal}').val(), $('#idNomeTable${animal.id_animal}').val(), $('#idRacaTable${animal.id_animal}').val(), $('#idPedigreTable${animal.id_animal}').val())" class="btn btn-danger">Remover</button>
+                        </td>
+                    </tr>
+                `);
+
+                // Adiciona as opções da dropdown list para a raça deste animal
+                addOpcoesRaca(animal.id_animal, animal.id_raca);
+            });
+
+            alert('Animal cadastrado com sucesso!');
+        },
+        error: function(error) {
+            console.error('Erro ao cadastrar animal:', error);
+            alert('Erro ao cadastrar animal. Verifique o console para mais detalhes.');
+        }
+    });
+}
+
+function atualizarAnimal(id_animal, reserva_go, nome_go, raga_go, ped_go) {
+    // Obtém os valores inseridos nos campos do formulário
+    const numero_reserva = $('#numero_reserva').val();
+    const nom_animal = $('#nom_animal').val();
+    const status_quarto_ocupado = $('#ocupado_sim').is(':checked');
+    const raca = $('#raca').val();
+
+    // Cria um objeto com os dados do animal
+    const animal = {
+        numero_reserva: numero_reserva,
+        nom_animal: nom_animal,
+        status_quarto_ocupado: status_quarto_ocupado,
+        raca: raca,
+        id_animal: id_animal,
+        reserva_go: reserva_go,
+        nome_go: nome_go,
+        raga_go: raga_go,
+        ped_go: ped_go
+    };
+
+    // Realiza a solicitação AJAX usando jQuery para verificar se a reserva existe
+    $.ajax({
+        url: `/animal/id/${id_animal}`,
+        type: 'GET',
+        success: async function(response) {
+            if (response) {
+                // A Quarto existe, então podemos prosseguir com a atualização
+                try {
+                    await $.ajax({
+                        url: `/animal/${id_animal}`, 
+                        type: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify(animal),
+                        success: function(response) {
+                            limparTabelaAnimal();
+                            response.forEach(animal => {
+                                $('#tabelaAnimal tbody').append(`
+                                    <tr>
+                                        <td><input type="number" value="${animal.id_animal}" readonly style="border: none;"></td>
+                                        <td><input type="text" id="idNomeTable${animal.id_animal}" value="${animal.nom_animal}"></td>
+                                        <td>
+                                            <select class="form-control edit-raca" id="idRacaTable${animal.id_animal}">
+                                                <!-- Opções da dropdown list são carregadas via JavaScript -->
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select id="idPedigreTable${animal.id_animal}">
+                                                <option value="1" ${animal.pedigre == 1 ? 'selected' : ''}>Sim</option>
+                                                <option value="2" ${animal.pedigre == 2 ? 'selected' : ''}>Não</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="number" value="${animal.id_reserva}" id="idReservaTable${animal.id_animal}"></td>
+                                        <td>
+                                            <button onclick="atualizarAnimal(${animal.id_animal}, $('#idReservaTable${animal.id_animal}').val(), $('#idNomeTable${animal.id_animal}').val(), $('#idRacaTable${animal.id_animal}').val(), $('#idPedigreTable${animal.id_animal}').val())" class="btn btn-primary">Atualizar</button>
+                                            <button onclick="removerAnimal(${animal.id_animal}, $('#idReservaTable${animal.id_animal}').val(), $('#idNomeTable${animal.id_animal}').val(), $('#idRacaTable${animal.id_animal}').val(), $('#idPedigreTable${animal.id_animal}').val())" class="btn btn-danger">Remover</button>
+                                        </td>
+                                    </tr>
+                                `);
+
+                                // Adiciona as opções da dropdown list para a raça deste animal
+                                addOpcoesRaca(animal.id_animal, animal.id_raca);
+                            });
+                            alert('Animal atualizada com sucesso!');
+                        },
+                        error: function(error) {
+                            console.error('Erro ao atualizar Quarto:', error);
+                            alert('Erro ao atualizar Animal. Verifique o console para mais detalhes.');
+                        }
+                    });
+                } catch (err) {
+                    console.error('Erro ao realizar a atualização:', err);
+                    alert('Erro ao realizar a atualização. Verifique o console para mais detalhes.');
+                }
+            } else {
+                alert('A Animal com o numero especificado não foi encontrada.');
+            }
+        },
+        error: function(error) {
+            console.error('Erro ao verificar Animal:', error);
+            alert('Erro ao verificar Animal. Verifique o console para mais detalhes.');
+        }
+    });
+}
+
+function removerAnimal(id_animal, reserva_go, nome_go, raga_go, ped_go) {
+    // Lógica para remover a reserva
+    alert("Função de remoção ainda não implementada!");
 }
 
 // Seleção exclusiva dos checkboxes
@@ -606,6 +774,28 @@ $(document).ready(function() {
         },
         error: function(error) {
             console.error('Erro ao carregar opções do tipo de genero:', error);
+        }
+    });
+});
+
+$(document).ready(function() {
+    // Adiciona a opção "Selecione" ao campo tipo_servico
+    $('#raca').append('<option value="">Selecione</option>');
+
+    // Realiza a requisição AJAX para obter os dados dos tipos de serviço
+    $.ajax({
+        url: '/raca',
+        type: 'GET',
+        dataType: 'json', // Força a interpretação da resposta como JSON
+        success: function(data) {
+            // Adiciona as novas opções ao campo tipo_servico
+            data.forEach(function(opcao) {
+                var option = $('<option></option>').attr('value', opcao.id_raca).text(opcao.nom_raca);
+                $('#raca').append(option);
+            });
+        },
+        error: function(error) {
+            console.error('Erro ao carregar opções do tipo de raca:', error);
         }
     });
 });
@@ -693,6 +883,42 @@ function limparQuarto(){
     $('#idReserva').val('');
 }
 
+function limparAnimal(){
+    // Limpa os campos de entrada
+    $('#numero_reserva').val('');
+    $('#pedigre_sim').prop('checked', false);
+    $('#pedigre_nao').prop('checked', false);
+    $('#nom_animal').val('');
+    $('#raca').val('')
+}
+
 function limparTabela(){
     $('#tabelaQuartos tbody').empty();
+}
+
+function limparTabelaAnimal(){
+    $('#tabelaAnimal tbody').empty();
+}
+
+function addOpcoesRaca(idAnimal, idRacaSelecionada) {
+    $.ajax({
+        url: '/raca',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            const select = $(`select[id="idRacaTable${idAnimal}"]`);
+            select.append('<option value="">Selecione</option>'); // Adiciona a opção "Selecione"
+            data.forEach(function(opcao) {
+                const option = $('<option></option>').attr('value', opcao.id_raca).text(opcao.nom_raca);
+                if (opcao.id_raca === idRacaSelecionada) {
+                    option.prop('selected', true); // Seleciona a raça do animal
+                }
+                select.append(option);
+            });
+            select.prop('disabled', false); // Habilita a dropdown list para edição
+        },
+        error: function(error) {
+            console.error('Erro ao carregar opções de raça:', error);
+        }
+    });
 }

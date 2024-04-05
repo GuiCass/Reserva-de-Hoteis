@@ -50,6 +50,31 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="form-group">
+                        <label for="idReserva">Reserva:</label>
+                        <input type="number" id="idReserva" name="idReserva" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group"></div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <button onclick="limparQuarto()" class="btn button btn-secondary" 
+                            style="padding: revert; margin: initial;">Limpar</button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <button onclick="pesquisarQuarto()" class="btn button btn-primary"
+                            style="padding: revert; margin: initial;">Pesquisar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
                         <label for="numero_quarto">Número de Quarto:</label>
                         <input type="number" id="numero_quarto" name="numero_quarto" class="form-control">
                     </div>
@@ -70,31 +95,6 @@
                             <label for="ocupado_nao"></label>
                         </div>
                         <label style="flex: 0 0 20%;">Não</label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="form-group">
-                        <label for="idReserva">Reserva:</label>
-                        <input type="number" id="idReserva" name="idReserva" class="form-control">
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="form-group"></div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <button onclick="limparQuarto()" class="btn button btn-secondary" 
-                            style="padding: revert; margin: initial;">Limpar</button>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <button onclick="pesquisarQuarto()" class="btn button btn-primary"
-                            style="padding: revert; margin: initial;">Pesquisar</button>
                     </div>
                 </div>
             </div>

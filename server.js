@@ -17,7 +17,7 @@ app.get('/reserva/:numeroReserva', async (req, res) => {
     const numeroReserva = req.params.numeroReserva;
     try {
         const result = await pool.query(`SELECT 
-        id_reserva, reserva.cpf_resp, num_quarto, id_service_plan, id_pag, nome, date_check_in, date_check_out 
+        id_reserva, reserva.cpf_resp, id_service_plan, id_pag, nome, date_check_in, date_check_out 
         FROM reserva 
         inner join hospede on reserva.cpf_resp = hospede.cpf_resp
         WHERE id_reserva = ${numeroReserva}`);       
@@ -27,14 +27,12 @@ app.get('/reserva/:numeroReserva', async (req, res) => {
             const reserva = {
                 id_reserva: result[0][0].id_reserva,
                 cpf_resp: result[0][0].cpf_resp,
-                num_quarto: result[0][0].num_quarto,
                 id_service_plan: result[0][0].id_service_plan,
                 id_pag: result[0][0].id_pag,
                 nome: result[0][0].nome,
                 date_check_in: result[0][0].date_check_in,
                 date_check_out: result[0][0].date_check_out
             };
-            console.log('Reserva encontrada:', reserva);
             res.json(reserva); // Envia a reserva como resposta
         } else {
             // Se não houver resultados, envia uma resposta com status 404
@@ -47,19 +45,17 @@ app.get('/reserva/:numeroReserva', async (req, res) => {
 });
 
 app.post('/reserva', async (req, res) => {
-    const { id_reserva, cpf_resp, num_quarto, id_service_plan, id_pag, date_check_in, date_check_out, nome } = req.body;
-    console.log('Chamou o post: ' + id_reserva);
-    console.log(typeof date_check_in);
+    const { id_reserva, cpf_resp, id_service_plan, id_pag, date_check_in, date_check_out, nome } = req.body;
     try {
         await pool.query(
             `INSERT INTO reserva 
-            (id_reserva, cpf_resp, num_quarto, id_service_plan, id_pag, date_check_in, date_check_out) 
-            VALUES (${id_reserva}, ${cpf_resp}, ${num_quarto}, ${id_service_plan}, ${id_pag}, 
+            (id_reserva, cpf_resp, id_service_plan, id_pag, date_check_in, date_check_out) 
+            VALUES (${id_reserva}, ${cpf_resp}, ${id_service_plan}, ${id_pag}, 
                 '${formatarDataParaBanco(date_check_in)}', '${formatarDataParaBanco(date_check_out)}')`
         );
         const result = await pool.query(
             `SELECT 
-            id_reserva, reserva.cpf_resp, num_quarto, id_service_plan, id_pag, nome, date_check_in, date_check_out 
+            id_reserva, reserva.cpf_resp, id_service_plan, id_pag, nome, date_check_in, date_check_out 
             FROM reserva 
             inner join hospede on reserva.cpf_resp = hospede.cpf_resp
             WHERE id_reserva = ${id_reserva}`
@@ -67,7 +63,6 @@ app.post('/reserva', async (req, res) => {
         const novaReserva = {
             id_reserva: result[0][0].id_reserva,
             cpf_resp: result[0][0].cpf_resp,
-            num_quarto: result[0][0].num_quarto,
             id_service_plan: result[0][0].id_service_plan,
             id_pag: result[0][0].id_pag,
             nome: result[0][0].nome,
@@ -84,7 +79,7 @@ app.post('/reserva', async (req, res) => {
 
 app.put('/reserva/:id_reserva', async (req, res) => {
     const id_reserva = req.params.id_reserva;
-    const { cpf_resp, num_quarto, id_service_plan, id_pag, date_check_in, date_check_out, nome } = req.body;
+    const { cpf_resp, id_service_plan, id_pag, date_check_in, date_check_out } = req.body;
 
     try {
         // Verifica se a reserva com o ID especificado existe no banco de dados
@@ -97,14 +92,14 @@ app.put('/reserva/:id_reserva', async (req, res) => {
         // Atualiza a reserva no banco de dados com os novos valores
         await pool.query(
             `UPDATE reserva 
-             SET cpf_resp = ${cpf_resp}, num_quarto = ${num_quarto}, id_service_plan = ${id_service_plan}, id_pag = ${id_pag}, 
+             SET cpf_resp = ${cpf_resp}, id_service_plan = ${id_service_plan}, id_pag = ${id_pag}, 
                  date_check_in = '${formatarDataParaBanco(date_check_in)}', date_check_out = '${formatarDataParaBanco(date_check_out)}'
              WHERE id_reserva = ${id_reserva}`
         );
 
         const result = await pool.query(
             `SELECT 
-            id_reserva, reserva.cpf_resp, num_quarto, id_service_plan, id_pag, nome, date_check_in, date_check_out 
+            id_reserva, reserva.cpf_resp, id_service_plan, id_pag, nome, date_check_in, date_check_out 
             FROM reserva 
             inner join hospede on reserva.cpf_resp = hospede.cpf_resp
             WHERE id_reserva = ${id_reserva}`
@@ -112,7 +107,6 @@ app.put('/reserva/:id_reserva', async (req, res) => {
         const novaReserva = {
             id_reserva: result[0][0].id_reserva,
             cpf_resp: result[0][0].cpf_resp,
-            num_quarto: result[0][0].num_quarto,
             id_service_plan: result[0][0].id_service_plan,
             id_pag: result[0][0].id_pag,
             nome: result[0][0].nome,
@@ -139,7 +133,6 @@ app.delete('/reserva/:id', async (req, res) => {
         const reserva = {
             id: resultSelect[0][0].id_reserva
         };
-        console.log(reserva.id);
         // Realize a consulta para excluir a reserva com o ID fornecido
         if(reserva.id != undefined) {
             const result = await pool.query(
@@ -174,7 +167,6 @@ app.get('/hospede/:cpfHospede', async (req, res) => {
                 genero: result[0][0].genero,
                 nom_genero: result[0][0].nom_genero
             };
-            console.log('Hospede encontrado:', reserva);
             res.json(reserva); // Envia a reserva como resposta
         } else {
             // Se não houver resultados, envia uma resposta com status 404
@@ -355,10 +347,6 @@ app.post('/quarto', async (req, res) => {
 app.put('/quarto/:numQuarto', async (req, res) => {
     const { num_quarto, status_quarto_ocupado, id_reserva, id_reserva_go } = req.body;
     const reservaInicial = id_reserva;
-    console.log('************************');
-    console.log(id_reserva);
-    console.log(reservaInicial);
-    console.log(id_reserva_go);
 
     try {
         // Verifica se a quarto com o ID especificado existe no banco de dados
@@ -429,6 +417,96 @@ app.delete('/quarto/:num_quarto', async (req, res) => {
     } catch (err) {
         console.error('Erro ao remover quarto:', err);
         res.status(500).json({ message: 'Erro ao remover quarto.' });
+    }
+});
+
+app.post('/animal', async (req, res) => {
+    const { numero_reserva, nom_animal, status_quarto_ocupado, raca } = req.body;
+    console.log
+    try {
+        await pool.query(
+            `INSERT INTO animal 
+            (id_reserva, nom_animal, id_raca, pedigre) 
+            VALUES ('${numero_reserva}', '${nom_animal}', ${raca}, '${status_quarto_ocupado == true ? 1 : 2}')`
+        );        
+        const result = await pool.query(`select 
+            id_animal, id_reserva, nom_animal, id_raca, pedigre
+            from animal
+            where id_reserva = '${numero_reserva}'
+            order by id_animal asc`);
+            res.json(result[0]);
+    } catch (err) {
+        console.error('Erro ao cadastrar quarto', err);
+        res.status(500).json({ message: 'Erro ao cadastrar quarto' });
+    }
+});
+
+app.get('/animal/reserva/:numReserva', async (req, res) => {
+    const numReserva = req.params.numReserva;
+    try {
+        const animal = await pool.query(`
+            select 
+            id_animal, id_reserva, nom_animal, id_raca, pedigre
+            from animal
+            where id_reserva = '${numReserva}'
+            order by id_animal asc
+        `);
+        res.json(animal[0]);
+    } catch (error) {
+        console.error('Erro ao pesquisar animais por numero:', error);
+        res.status(500).json({ message: 'Erro ao pesquisar animais por reserva.' });
+    }
+});
+
+app.get('/animal/id/:numid', async (req, res) => {
+    const numId = req.params.numid;
+    try {
+        const animal = await pool.query(`
+            select 
+            id_animal, id_reserva, nom_animal, id_raca, pedigre
+            from animal
+            where id_animal = '${numId}'
+            order by id_animal asc
+        `);
+        res.json(animal[0]);
+    } catch (error) {
+        console.error('Erro ao pesquisar animais por numero:', error);
+        res.status(500).json({ message: 'Erro ao pesquisar animais por reserva.' });
+    }
+});
+
+app.put('/animal/:id_animal', async (req, res) => {
+    const { id_animal, numero_reserva, status_quarto_ocupado, raca, reserva_go, nome_go, raga_go } = req.body;
+
+    try {
+        // Verifica se a animal com o ID especificado existe no banco de dados
+        // Se não existir, retorna um erro 404 (Not Found)
+        const animalExistente = await pool.query(`SELECT * FROM animal WHERE id_animal = ${id_animal}`);
+        if (!(animalExistente && animalExistente.length > 0 && animalExistente[0][0] && animalExistente[0][0].id_animal !== undefined)) {
+            return res.status(404).json({ message: 'Quarto não encontrada' });
+        }
+
+        // Atualiza a Quarto no banco de dados com os novos valores
+        await pool.query(
+            `UPDATE animal 
+             SET pedigre = '${status_quarto_ocupado == true ? 1 : 2}', 
+             id_reserva = '${reserva_go}',
+             nom_animal = '${nome_go}',
+             id_raca = '${raga_go}'
+             where id_animal = ${id_animal}`
+        );
+
+        const result = await pool.query(
+            `select 
+            id_animal, id_reserva, nom_animal, id_raca, pedigre
+            from animal
+            where id_reserva = '${numero_reserva}'
+            order by id_animal asc`
+        );
+        res.json(result[0]);
+    } catch (err) {
+        console.error('Erro ao atualizar Hospede:', err);
+        res.status(500).json({ message: 'Erro ao atualizar Hospede' });
     }
 });
 
@@ -530,6 +608,22 @@ app.get('/genero', async (req, res) => {
     } catch (error) {
         console.error('Erro ao buscar opções do tipo de genero:', error);
         res.status(500).json({ message: 'Erro ao buscar opções do tipo de genero' });
+    }
+});
+
+app.get('/raca', async (req, res) => {
+    try {
+        // Consulta ao banco de dados para obter os valores possíveis para tipo_servico
+        const tiposRaca = await pool.query('select id_raca, nom_raca from raca');
+        
+        // Extrai a matriz de resultados dos tipos de pagamento
+        const tiposRacaRows = tiposRaca[0];
+        
+        // Retorna apenas a matriz de resultados como JSON
+        res.json(tiposRacaRows);
+    } catch (error) {
+        console.error('Erro ao buscar opções do tipo de raca:', error);
+        res.status(500).json({ message: 'Erro ao buscar opções do tipo de raca' });
     }
 });
 
