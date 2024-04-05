@@ -696,8 +696,67 @@ function atualizarAnimal(id_animal, reserva_go, nome_go, raga_go, ped_go) {
 }
 
 function removerAnimal(id_animal, reserva_go, nome_go, raga_go, ped_go) {
-    // Lógica para remover a reserva
-    alert("Função de remoção ainda não implementada!");
+    // Obtém os valores inseridos nos campos do formulário
+    const numero_reserva = $('#numero_reserva').val();
+    const nom_animal = $('#nom_animal').val();
+    const status_quarto_ocupado = $('#ocupado_sim').is(':checked');
+    const raca = $('#raca').val();
+
+    // Cria um objeto com os dados do animal
+    const animal = {
+        numero_reserva: numero_reserva,
+        nom_animal: nom_animal,
+        status_quarto_ocupado: status_quarto_ocupado,
+        raca: raca,
+        id_animal: id_animal,
+        reserva_go: reserva_go,
+        nome_go: nome_go,
+        raga_go: raga_go,
+        ped_go: ped_go
+    };
+
+    $.ajax({
+        url: `/animal/${id_animal}`,
+        type: 'DELETE',
+        contentType: 'application/json',
+        data: JSON.stringify(animal),
+        success: function(response) {
+            limparTabelaAnimal(); // Limpa os campos do formulário após a remoção
+            response.forEach(animal => {
+                $('#tabelaAnimal tbody').append(`
+                                    <tr>
+                                        <td><input type="number" value="${animal.id_animal}" readonly style="border: none;"></td>
+                                        <td><input type="text" id="idNomeTable${animal.id_animal}" value="${animal.nom_animal}"></td>
+                                        <td>
+                                            <select class="form-control edit-raca" id="idRacaTable${animal.id_animal}">
+                                                <!-- Opções da dropdown list são carregadas via JavaScript -->
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select id="idPedigreTable${animal.id_animal}">
+                                                <option value="1" ${animal.pedigre == 1 ? 'selected' : ''}>Sim</option>
+                                                <option value="2" ${animal.pedigre == 2 ? 'selected' : ''}>Não</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="number" value="${animal.id_reserva}" id="idReservaTable${animal.id_animal}"></td>
+                                        <td>
+                                            <button onclick="atualizarAnimal(${animal.id_animal}, $('#idReservaTable${animal.id_animal}').val(), $('#idNomeTable${animal.id_animal}').val(), $('#idRacaTable${animal.id_animal}').val(), $('#idPedigreTable${animal.id_animal}').val())" class="btn btn-primary">Atualizar</button>
+                                            <button onclick="removerAnimal(${animal.id_animal}, $('#idReservaTable${animal.id_animal}').val(), $('#idNomeTable${animal.id_animal}').val(), $('#idRacaTable${animal.id_animal}').val(), $('#idPedigreTable${animal.id_animal}').val())" class="btn btn-danger">Remover</button>
+                                        </td>
+                                    </tr>
+                                `);
+
+                                // Adiciona as opções da dropdown list para a raça deste animal
+                                addOpcoesRaca(animal.id_animal, animal.id_raca);
+                });
+                //alert(response.message);
+                alert('Sucesso');
+        },
+        error: function(error) {
+            console.error('Erro ao remover quarto:', error);
+            alert('Erro ao remover quarto. Verifique o console para mais detalhes.');
+        }
+    });
 }
 
 // Seleção exclusiva dos checkboxes
@@ -857,14 +916,22 @@ function cpfParaNumeros(cpf) {
 
 function limparReserva() {
     // Limpa os valores dos campos do formulário
-    document.getElementById('numero_reserva').value = '';
-    document.getElementById('cpf').value = '';
-    document.getElementById('nome').value = '';
-    document.getElementById('quarto').value = '';
-    document.getElementById('tipo_servico').value = '';
-    document.getElementById('tipo_pagamento').value = '';
-    document.getElementById('checkin_in').value = '';
-    document.getElementById('checkin_out').value = '';
+    //document.getElementById('numero_reserva').value = '';
+    //document.getElementById('cpf').value = '';
+    //document.getElementById('nome').value = '';
+    //document.getElementById('quarto').value = '';
+    //document.getElementById('tipo_servico').value = '';
+    //document.getElementById('tipo_pagamento').value = '';
+    //document.getElementById('checkin_in').value = '';
+    //document.getElementById('checkin_out').value = '';
+    $('#numero_reserva').val('');
+    $('#cpf').val('');
+    $('#nome').val('');
+    $('#quarto').val('');
+    $('#tipo_servico').val('');
+    $('#tipo_pagamento').val('');
+    $('#checkin_in').val('');
+    $('#checkin_out').val('');
 }
 
 function limparHospede() {

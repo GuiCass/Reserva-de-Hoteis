@@ -510,6 +510,37 @@ app.put('/animal/:id_animal', async (req, res) => {
     }
 });
 
+app.delete('/animal/:id_animal', async (req, res) => {
+    const { id_animal, numero_reserva, status_quarto_ocupado, raca, reserva_go, nome_go, raga_go } = req.body;
+    try {
+        const resultSelect = await pool.query(
+            `SELECT * FROM animal WHERE id_animal = ${id_animal}`
+        );
+        const animal = {
+            id_animal: resultSelect[0][0].id_animal
+        };
+        // Realize a consulta para excluir a hospede com o ID fornecido
+        if(animal.id_animal != undefined) {
+            await pool.query(
+                `DELETE FROM animal WHERE id_animal = ${id_animal}`
+            );
+            const result = await pool.query(
+                `select 
+                id_animal, id_reserva, nom_animal, id_raca, pedigre
+                from animal
+                where id_reserva = '${numero_reserva}'
+                order by id_animal asc`
+            );
+            res.json(result[0]);
+        } else {
+            res.status(404).json({ message: 'quarto não encontrada.' });
+        }
+    } catch (err) {
+        console.error('Erro ao remover quarto:', err);
+        res.status(500).json({ message: 'Erro ao remover quarto.' });
+    }
+});
+
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 });
